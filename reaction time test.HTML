@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Time Test</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        #table-container {
+            margin-right: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 200px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .button {
+            width: 96px;
+            height: 96px;
+            background-color: grey;
+            border: none;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            transition: background-color 0s;
+        }
+
+        #center {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Positioning the buttons in a hexagon pattern */
+        #top {
+            top: calc(50% - 156px);
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #top-right {
+            top: calc(50% - 78px);
+            left: calc(50% + 135px);
+            transform: translate(-50%, -50%);
+        }
+
+        #bottom-right {
+            top: calc(50% + 78px);
+            left: calc(50% + 135px);
+            transform: translate(-50%, -50%);
+        }
+
+        #bottom {
+            top: calc(50% + 156px);
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #bottom-left {
+            top: calc(50% + 78px);
+            left: calc(50% - 135px);
+            transform: translate(-50%, -50%);
+        }
+
+        #top-left {
+            top: calc(50% - 78px);
+            left: calc(50% - 135px);
+            transform: translate(-50%, -50%);
+        }
+
+        #start-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Test #</th>
+                    <th>Time (ms)</th>
+                </tr>
+            </thead>
+            <tbody id="results-table-body">
+                <tr><td>1</td><td id="result-1">-</td></tr>
+                <tr><td>2</td><td id="result-2">-</td></tr>
+                <tr><td>3</td><td id="result-3">-</td></tr>
+                <tr><td>4</td><td id="result-4">-</td></tr>
+                <tr><td>5</td><td id="result-5">-</td></tr>
+                <tr><td>6</td><td id="result-6">-</td></tr>
+                <tr><td>7</td><td id="result-7">-</td></tr>
+                <tr><td>8</td><td id="result-8">-</td></tr>
+                <tr><td>9</td><td id="result-9">-</td></tr>
+                <tr><td>10</td><td id="result-10">-</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="container">
+        <button id="top" class="button"></button>
+        <button id="top-right" class="button"></button>
+        <button id="bottom-right" class="button"></button>
+        <button id="bottom" class="button"></button>
+        <button id="bottom-left" class="button"></button>
+        <button id="top-left" class="button"></button>
+        <button id="center" class="button"></button>
+    </div>
+    <button id="start-button">Start Test</button>
+    <div id="result"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('.button');
+            const startButton = document.getElementById('start-button');
+            const resultDiv = document.getElementById('result');
+            const resultsTableBody = document.getElementById('results-table-body');
+
+            let startTime;
+            let timeout;
+            let reactionTimes = [];
+            let testCount = 0;
+            const totalTests = 10;
+
+            const getRandomButton = () => {
+                const randomIndex = Math.floor(Math.random() * buttons.length);
+                return buttons[randomIndex];
+            };
+
+            const lightUpButton = (button) => {
+                button.style.backgroundColor = 'green';
+                button.addEventListener('click', handleClick);
+                startTime = new Date().getTime();
+            };
+
+            const handleClick = (event) => {
+                const endTime = new Date().getTime();
+                const reactionTime = endTime - startTime;
+                reactionTimes.push(reactionTime);
+                document.getElementById(`result-${testCount + 1}`).textContent = reactionTime;
+                testCount++;
+
+                resetButtons();
+
+                if (testCount < totalTests) {
+                    startTest();
+                } else {
+                    displayAverageTime();
+                    startButton.style.display = 'block';
+                }
+            };
+
+            const resetButtons = () => {
+                buttons.forEach(button => {
+                    button.style.backgroundColor = 'grey';
+                    button.removeEventListener('click', handleClick);
+                });
+                clearTimeout(timeout);
+            };
+
+            const startTest = () => {
+                const randomDelay = Math.floor(Math.random() * 3000) + 1000;
+                timeout = setTimeout(() => {
+                    const randomButton = getRandomButton();
+                    lightUpButton(randomButton);
+                }, randomDelay);
+            };
+
+            const displayAverageTime = () => {
+                const sum = reactionTimes.reduce((a, b) => a + b, 0);
+                const averageTime = sum / reactionTimes.length;
+                resultDiv.textContent = `Average Reaction Time: ${averageTime.toFixed(2)} ms`;
+            };
+
+            startButton.addEventListener('click', () => {
+                reactionTimes = [];
+                testCount = 0;
+                resultDiv.textContent = '';
+                startButton.style.display = 'none';
+                for (let i = 1; i <= totalTests; i++) {
+                    document.getElementById(`result-${i}`).textContent = '-';
+                }
+                startTest();
+            });
+        });
+    </script>
+</body>
+</html>
